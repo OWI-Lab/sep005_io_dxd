@@ -36,6 +36,13 @@ if __name__ == '__main__':
         maintainer='Wout Weijtjens',
         maintainer_email='wout.weijtjens@vub.be',
         keywords=['io','fbgs','SEP005'],
+        install_requires=[
+            'numpy>=1.11.0',
+            'sdypy-sep005>=0.1.0',
+            'pytz',
+            'dwdatareader>=1.0.0',
+            'pandas',
+        ],
         packages=['sep005_io_dxd'],
         classifiers=['Development Status :: 3 - Alpha',
                      'Intended Audience :: Developers',

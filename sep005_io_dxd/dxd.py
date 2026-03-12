@@ -29,14 +29,14 @@ class DxdFileReader:
         if not os.path.isfile(self.fullpath):
             raise FileNotFoundError(f"File not Found {self.fullpath}")
 
-        with dwdatareader.open(self.fullpath) as file:
+        with dwdatareader.open_file(self.fullpath) as file:
             info = file.info
             self.dt = info.start_store_time
             self.fs = info.sample_rate  # This the global sampling rate
             self.duration = info.duration
-            self.df = file.dataframe()
+            self.df = file.dataframe(channels=list(file.sync_channels))
             self.time = self.df.index.to_list()
-            self.channels = file.channels
+            self.channels = [file[name] for name in file.sync_channels]
             self.info = info
 
         if verbose:
@@ -65,8 +65,8 @@ class DxdFileReader:
         :return:
         """
         # check the index matches the sampling frequency
-        differences = np.diff(self.time)  # Calculate the differences between consecutive elements
-        is_equidistant = np.allclose(differences, differences[0]*np.ones(len(differences)))  # Check if all differences are the same, up to precision
+        second_derivative = np.diff(self.time, n=2)  # Calculate the second differences between consecutive elements
+        is_equidistant = np.allclose(second_derivative, 0)  # Second derivative is zero for equidistant samples (skip first boundary)
         if not is_equidistant:
             raise ValueError('Samples missing from channels')
         if self.verbose and is_equidistant:
