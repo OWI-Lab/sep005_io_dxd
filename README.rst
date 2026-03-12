@@ -4,6 +4,11 @@ SEP005 .dxd io
 Basic package to import data collected from Dewesoft .DXD files compliant with
 SDyPy format for timeseries as proposed in SEP005.
 
+Installation
+------------
+
+Can be readily be installed from pip: ``pip install sep005-io-dxd``
+
 Using the package
 ------------------
 
@@ -11,8 +16,9 @@ Using the package
 
         from sep005_io_dxd import read_dxd
 
-        file_path = # Path to the tdms file of interest
+        file_path = # Path to the dxd file of interest
         signals = read_dxd(file_path)
+
 
 Acknowledgements
 ----------------
