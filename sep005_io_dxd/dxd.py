@@ -14,12 +14,19 @@ class Channel():
         self.time = self.df.index
 
 
-    @property
     def __str__(self):
         if self.verbose:
-            return f'{self.name} [{self.unit}] @ {self.sample_rate}'
+            return f'{self.name} [{self.unit}] @ {self.sample_rate}Hz: (min:{self.min:.3f}, max:{self.max:.3f})'
         else:
-            return str(self.name)
+            return f'{self.name}'
+
+    @property
+    def min(self):
+        return self.df.min().item()
+
+    @property
+    def max(self):
+        return self.df.max().item()
 
     @property
     def nan_samples(self):
@@ -89,10 +96,10 @@ class DxdFileReader:
 
         if verbose:
             print(
-                f'Loaded {len(self.channels)} channels starting at {str(self.dt)} at {self.fs}Hz'
+                f'Loaded {len(self.channels)} channels starting at {self.dt} at {self.fs}Hz'
             )
             for _c in self.channels:
-                print(str(_c))
+                print(_c)
 
         if qa:
             self.missing_samples

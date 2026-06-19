@@ -26,6 +26,20 @@ def test_compliance_sep005(filename):
         # Asserts that ZERO elements are NaN
         assert not np.isnan(_s['data']).any(), "Array contains NaN values"
 
+    #
+@pytest.mark.parametrize("filename", GOOD_FILES)
+def test_verbose(filename, capsys):
+    """
+    Make sure the function behaves as expected when verbose=True
+    :param filename:
+    :return:
+    """
+    file_path = os.path.join(static_dir, 'good', filename)
+    _ = read_dxd(file_path, verbose=True)
+
+    # 2. Capture the output
+    captured = capsys.readouterr()
+    print(captured.out)
 
 def test_acc_001():
     """
