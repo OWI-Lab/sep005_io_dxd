@@ -4,6 +4,51 @@ from typing import Union
 import dwdatareader
 import numpy as np
 
+class Channel():
+    def __init__(self, channel:dwdatareader.DWChannel, verbose=True):
+        self.verbose = verbose
+        self.name = channel.name
+        self.sample_rate = channel.sample_rate
+        self.unit = channel.unit
+        self.df = channel.dataframe()
+        self.time = self.df.index
+
+
+    @property
+    def __str__(self):
+        if self.verbose:
+            return f'{self.name} [{self.unit}] @ {self.sample_rate}'
+        else:
+            return str(self.name)
+
+    @property
+    def nan_samples(self):
+        """
+        Check if there are samples as NaN
+        :return:
+        """
+        if len(self.df) != len(self.df.dropna()):
+            raise ValueError(f'Channel {self.name} contain NaN samples')
+        if self.verbose:
+            print(f'QA (NaN samples) : Imported {self.name} contain no NaNs')
+
+    @property
+    def missing_samples(self):
+        """
+        Check if the sampling frequency is maintained properly
+        :return:
+        """
+        # check the index matches the sampling frequency
+        second_derivative = np.diff(self.time,
+                                    n=2)  # Calculate the second differences between consecutive elements
+        is_equidistant = np.allclose(second_derivative,
+                                     0)  # Second derivative is zero for equidistant samples (skip first boundary)
+        if not is_equidistant:
+            raise ValueError(f'Samples missing from channel {self.name}')
+        if self.verbose and is_equidistant:
+            print(
+                f'QA (missing samples) : Imported signal {self.name} is equidistant spaced on index'
+            )
 
 class DxdFileReader:
 
@@ -34,13 +79,20 @@ class DxdFileReader:
             self.dt = info.start_store_time
             self.fs = info.sample_rate  # This the global sampling rate
             self.duration = info.duration
+
             self.df = file.dataframe(channels=list(file.sync_channels))
             self.time = self.df.index.to_list()
-            self.channels = [file[name] for name in file.sync_channels]
+            self.channels = [
+                Channel(file[name], verbose=self.verbose) for name in file.sync_channels
+            ]
             self.info = info
 
         if verbose:
-            print(f'Loaded {len(self.channels)} channels starting at {str(self.dt)} at {self.fs}Hz')
+            print(
+                f'Loaded {len(self.channels)} channels starting at {str(self.dt)} at {self.fs}Hz'
+            )
+            for _c in self.channels:
+                print(str(_c))
 
         if qa:
             self.missing_samples
@@ -52,11 +104,8 @@ class DxdFileReader:
         Check if there are samples as NaN
         :return:
         """
-        if len(self.df) != len(self.df.dropna()):
-            raise ValueError('Channels contain NaN samples')
-        if self.verbose:
-            print('QA (NaN samples) : Imported signals contain no NaNs')
-
+        for _c in self.channels:
+            _c.nan_samples
 
     @property
     def missing_samples(self):
@@ -65,13 +114,8 @@ class DxdFileReader:
         :return:
         """
         # check the index matches the sampling frequency
-        second_derivative = np.diff(self.time, n=2)  # Calculate the second differences between consecutive elements
-        is_equidistant = np.allclose(second_derivative, 0)  # Second derivative is zero for equidistant samples (skip first boundary)
-        if not is_equidistant:
-            raise ValueError('Samples missing from channels')
-        if self.verbose and is_equidistant:
-            print('QA (missing samples) : Imported signals are equidistant spaced on index')
-
+        for _c in self.channels:
+            _c.missing_samples
 
     def to_sep005(self) -> list[dict]:
         """_summary_
@@ -83,7 +127,7 @@ class DxdFileReader:
         """
         signals = []
         for chan in self.channels:
-            data = self.df[chan.name].to_numpy()
+            data = chan.df.to_numpy()
             fs_signal = len(data) / self.duration
 
             signal = {
