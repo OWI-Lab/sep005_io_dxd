@@ -1,6 +1,5 @@
 # Package requirements for users
 numpy>=1.11.0
 sdypy-sep005>=1.0.0
-pytz
 dwdatareader>=1.0.0
 pandas

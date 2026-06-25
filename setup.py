@@ -35,11 +35,10 @@ if __name__ == '__main__':
         author_email='wout.weijtjens@vub.be',
         maintainer='Wout Weijtjens',
         maintainer_email='wout.weijtjens@vub.be',
-        keywords=['io','fbgs','SEP005'],
+        keywords=['io','dxd','SEP005'],
         install_requires=[
             'numpy>=1.11.0',
-            'sdypy-sep005>=0.1.0',
-            'pytz',
+            'sdypy-sep005>=1.0.0',
             'dwdatareader>=1.0.0',
             'pandas',
         ],
