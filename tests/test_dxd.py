@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 import pytest
-from sdypy_sep005.sep005 import assert_sep005
+from sdypy_sep005.sep005 import Sep005Data
 
 from sep005_io_dxd import read_dxd
 
@@ -20,7 +20,8 @@ def test_compliance_sep005(filename):
     signals = read_dxd(file_path)  # should already not crash here
 
     assert len(signals) != 0  # Not an empty response
-    assert_sep005(signals) # All channels are SEP005 compliant
+    for sig in signals:
+        Sep005Data.validate(sig) # All channels are SEP005 compliant
 
     for _s in signals:
         # Asserts that ZERO elements are NaN
